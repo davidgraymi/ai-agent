@@ -1,0 +1,5 @@
+langchain
+openai
+requests
+ollama  # optional; only if you use ollama python client
+python-dotenv
