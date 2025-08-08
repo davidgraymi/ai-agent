@@ -1,5 +1,5 @@
 import requests
-from config import GITHUB_TOKEN, REPO_OWNER, REPO_NAME
+from src.config import GITHUB_TOKEN, REPO_OWNER, REPO_NAME
 
 BASE_URL = "https://api.github.com"
 

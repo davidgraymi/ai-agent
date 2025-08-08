@@ -3,7 +3,7 @@ import os
 import tempfile
 import json
 from typing import Tuple, Optional
-from config import GITHUB_TOKEN, REPO_OWNER, REPO_NAME
+from src.config import GITHUB_TOKEN, REPO_OWNER, REPO_NAME
 
 def _run(cmd, check=True, capture_output=True, text=True, cwd=None):
     return subprocess.run(cmd, check=check, capture_output=capture_output, text=text, cwd=cwd)

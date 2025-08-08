@@ -1,5 +1,5 @@
 import argparse
-from ai_agent import run_agent
+from src.ai_agent import run_agent
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

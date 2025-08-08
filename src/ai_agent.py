@@ -2,11 +2,11 @@ import time
 import json
 from langchain.agents import initialize_agent, Tool
 from langchain.llms import OpenAI, Ollama
-from config import LLM_PROVIDER, LLM_MODEL
-from github_client import get_issue_data
-from tools.file_tools import read_file, apply_file_patch, make_unified_diff
-from tools.test_tools import run_tests
-from state_manager import save_state, load_state
+from src.config import LLM_PROVIDER, LLM_MODEL, DRY_RUN
+from src.github_client import get_issue_data
+from src.tools.file_tools import read_file, apply_file_patch, make_unified_diff
+from src.tools.test_tools import run_tests
+from src.state_manager import save_state, load_state
 
 def get_llm():
     if LLM_PROVIDER == "ollama":
@@ -36,6 +36,11 @@ def run_agent(issue_number, max_iterations=10, base_branch="main", repo_root="."
             name="apply_patch",
             func=lambda path, new_content, summary: _apply_patch_helper(path, new_content, summary, issue_number),
             description="Provide (path, new_content, commit_summary). Creates a branch, makes a patch, commits and opens a PR. Returns status and URLs."
+        ),
+        Tool(
+            name="list_repo_tree",
+            func=lambda: get_repo_tree(repo_root),
+            description="List all tracked files in the repo, respecting .gitignore",
         ),
     ]
 

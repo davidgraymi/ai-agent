@@ -1,6 +1,6 @@
 import json
-from config import STATE_FILE
 from typing import Optional, Dict
+from src.config import STATE_FILE
 
 def save_state(issue_number: int, history: list, metadata: Optional[Dict]=None):
     state = {"issue_number": issue_number, "history": history, "metadata": metadata or {}}

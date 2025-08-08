@@ -1,7 +1,8 @@
 import os
 import difflib
 from typing import Tuple
-from tools import git_utils
+import subprocess
+from src.tools import git_utils
 
 def read_file(path: str) -> str:
     if not os.path.exists(path):
