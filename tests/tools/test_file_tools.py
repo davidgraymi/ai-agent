@@ -39,6 +39,55 @@ def test_make_unified_diff_existing_file(temp_file):
     assert "-line 2\n" in diff
     assert "+line 3\n" in diff
 
+def test_make_unified_diff_no_change(temp_file):
+    tmpdir, path = temp_file
+    content = "line 1\nline 2\n"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+
+    diff = make_unified_diff(os.path.relpath(path, tmpdir), content, repo_root=tmpdir)
+    # When no changes, diff should be empty string
+    assert diff == "", "Diff should be empty when content is unchanged"
+
+def test_make_unified_diff_detects_added_line(temp_file):
+    tmpdir, path = temp_file
+    old_content = "line 1\nline 2\n"
+    new_content = "line 1\nline 2\nline 3\n"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(old_content)
+
+    diff = make_unified_diff(os.path.relpath(path, tmpdir), new_content, repo_root=tmpdir)
+    assert "+line 3\n" in diff, "Diff should contain added line"
+
+def test_make_unified_diff_detects_removed_line(temp_file):
+    tmpdir, path = temp_file
+    old_content = "line 1\nline 2\nline 3\n"
+    new_content = "line 1\nline 3\n"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(old_content)
+
+    diff = make_unified_diff(os.path.relpath(path, tmpdir), new_content, repo_root=tmpdir)
+    assert "-line 2\n" in diff, "Diff should contain removed line"
+
+def test_make_unified_diff_detects_changed_line(temp_file):
+    tmpdir, path = temp_file
+    old_content = "line 1\nline 2\nline 3\n"
+    new_content = "line 1\nline changed\nline 3\n"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(old_content)
+
+    diff = make_unified_diff(os.path.relpath(path, tmpdir), new_content, repo_root=tmpdir)
+    assert "-line 2\n" in diff and "+line changed\n" in diff, "Diff should contain changed line"
+
+def test_make_unified_diff_for_new_file(temp_file):
+    tmpdir, path = temp_file
+    new_content = "line 1\nline 2\n"
+    # File does not exist
+    diff = make_unified_diff(os.path.relpath(path, tmpdir), new_content, repo_root=tmpdir)
+    assert diff.startswith(f"--- a/{os.path.basename(path)}"), "Diff header should have correct file name"
+    assert "+line 1\n" in diff, "Diff should contain added lines"
+
+
 @pytest.mark.skip(reason="Requires git repo and git_utils mocks")
 def test_apply_file_patch_dry_run(temp_file):
     tmpdir, path = temp_file

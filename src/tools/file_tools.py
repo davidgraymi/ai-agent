@@ -23,8 +23,14 @@ def make_unified_diff(path: str, new_content: str, repo_root: str = ".") -> str:
 
     old_lines = old_content.splitlines(keepends=True)
     new_lines = new_content.splitlines(keepends=True)
-    # difflib.unified_diff adds file paths; use a/ and b/ to make git happy
-    diff = difflib.unified_diff(old_lines, new_lines, fromfile=f"a/{path}", tofile=f"b/{path}")
+
+    rel_path = os.path.relpath(abs_path, repo_root)
+
+    diff = difflib.unified_diff(
+        old_lines, new_lines,
+        fromfile=f"a/{rel_path}",
+        tofile=f"b/{rel_path}"
+    )
     return "".join(diff)
 
 def apply_file_patch(path: str, new_content: str, branch_name: str, commit_message: str, issue_number: int=None, dry_run: bool=False) -> dict:
