@@ -33,7 +33,7 @@ def make_unified_diff(path: str, new_content: str, repo_root: str = ".") -> str:
     )
     return "".join(diff)
 
-def apply_file_patch(path: str, new_content: str, branch_name: str, commit_message: str, issue_number: int=None, dry_run: bool=False) -> dict:
+def apply_file_patch(path: str, new_content: str, repo_name: str, branch_name: str, commit_message: str, issue_number: int=None, dry_run: bool=False) -> dict:
     """
     Create a branch (if needed), craft a patch, apply it safely, commit, push, and optionally open a PR.
     Returns a dict with status and messages.
@@ -66,7 +66,7 @@ def apply_file_patch(path: str, new_content: str, branch_name: str, commit_messa
 
         pr_title = commit_message if issue_number is None else f"[Issue #{issue_number}] {commit_message}"
         pr_body = f"Automated change by agent for issue #{issue_number}" if issue_number else "Automated change by agent"
-        pr = git_utils.create_pull_request(branch_name, pr_title, pr_body, dry_run=dry_run)
+        pr = git_utils.create_pull_request(repo_name, branch_name, pr_title, pr_body, dry_run=dry_run)
         res["pr"] = pr
         return res
 

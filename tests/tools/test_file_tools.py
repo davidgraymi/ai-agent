@@ -92,12 +92,13 @@ def test_make_unified_diff_for_new_file(temp_file):
 def test_apply_file_patch_dry_run(temp_file):
     tmpdir, path = temp_file
     new_content = "new file content\n"
+    repo_name = "repo"
     branch_name = "test/branch"
     commit_message = "Test commit"
     # Dry run should not actually commit or push anything
     result = apply_file_patch(
         os.path.relpath(path, tmpdir), new_content,
-        branch_name, commit_message,
+        repo_name, branch_name, commit_message,
         dry_run=True
     )
     assert result["dry_run"] is True

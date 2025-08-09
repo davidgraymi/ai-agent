@@ -3,7 +3,7 @@ import os
 import tempfile
 import json
 from typing import Tuple, Optional
-from src.config import GITHUB_TOKEN, REPO_OWNER, REPO_NAME
+from src.config import GITHUB_TOKEN, REPO_OWNER
 
 def _run(cmd, check=True, capture_output=True, text=True, cwd=None):
     return subprocess.run(cmd, check=check, capture_output=capture_output, text=text, cwd=cwd)
@@ -75,20 +75,20 @@ def push_branch(branch_name: str, remote: str = "origin", dry_run: bool=False) -
         return False, res.stderr
     return True, "Pushed."
 
-def create_pull_request(branch_name: str, title: str, body: str, base: str = "main", dry_run: bool=False) -> dict:
+def create_pull_request(repo_name: str, branch_name: str, title: str, body: str, base: str = "main", dry_run: bool=False) -> dict:
     """
     Use GitHub REST API to create a PR. Requires GITHUB_TOKEN in config.
     Returns the JSON response as dict.
     """
     if dry_run:
         return {
-            "html_url": f"https://github.com/{REPO_OWNER}/{REPO_NAME}/pull/fake",
+            "html_url": f"https://github.com/{REPO_OWNER}/{repo_name}/pull/fake",
             "title": title,
             "body": body,
             "dry_run": True
         }
     import requests
-    url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/pulls"
+    url = f"https://api.github.com/repos/{REPO_OWNER}/{repo_name}/pulls"
     headers = {"Authorization": f"token {GITHUB_TOKEN}", "Accept": "application/vnd.github+json"}
     payload = {"title": title, "head": branch_name, "base": base, "body": body}
     resp = requests.post(url, headers=headers, json=payload)

@@ -1,7 +1,7 @@
 import time
 import json
 from langchain.agents import initialize_agent, Tool
-from langchain.llms import OpenAI, Ollama
+from langchain_community.llms import OpenAI, Ollama
 from src.config import LLM_PROVIDER, LLM_MODEL, DRY_RUN
 from src.github_client import get_issue_data
 from src.tools.file_tools import read_file, apply_file_patch, make_unified_diff
@@ -14,17 +14,17 @@ def get_llm():
     else:
         return OpenAI(model=LLM_MODEL)
 
-def run_agent(issue_number, max_iterations=10, base_branch="main", repo_root="."):
+def run_agent(repo_name, issue_number, max_iterations=10, base_branch="main", repo_root="."):
     # load previous state
     state = load_state()
-    if state and state.get("issue_number") == issue_number:
+    if state and state.get("issue_number") == issue_number and state.get("repo_name") == repo_name:
         history = state.get("history", [])
         iteration = state.get("last_iteration", 0)
     else:
         history = []
         iteration = 0
 
-    issue_data = get_issue_data(issue_number)
+    issue_data = get_issue_data(repo_name, issue_number)
     llm = get_llm()
 
     # define tools exposed to the LLM
@@ -34,12 +34,12 @@ def run_agent(issue_number, max_iterations=10, base_branch="main", repo_root="."
         Tool(name="run_tests", func=lambda: run_tests(), description="Run tests and return results"),
         Tool(
             name="apply_patch",
-            func=lambda path, new_content, summary: _apply_patch_helper(path, new_content, summary, issue_number),
+            func=lambda path, new_content, summary: _apply_patch_helper(path, new_content, summary, repo_name, issue_number),
             description="Provide (path, new_content, commit_summary). Creates a branch, makes a patch, commits and opens a PR. Returns status and URLs."
         ),
         Tool(
             name="list_repo_tree",
-            func=lambda: get_repo_tree(repo_root),
+            func=lambda: __list_tree(repo_root),
             description="List all tracked files in the repo, respecting .gitignore",
         ),
     ]
@@ -90,7 +90,7 @@ def __list_tree(repo_root="."):
     res = subprocess.run(["git", "ls-tree", "-r", "HEAD", "--name-only"], capture_output=True, text=True, cwd=repo_root)
     return res.stdout.strip().splitlines()
 
-def _apply_patch_helper(path: str, new_content: str, summary: str, issue_number: int):
+def _apply_patch_helper(path: str, new_content: str, summary: str, repo_name: str, issue_number: int):
     """
     Called by the agent via the Tool. We create a descriptive branch name using timestamp/issue/iteration.
     """
@@ -98,4 +98,4 @@ def _apply_patch_helper(path: str, new_content: str, summary: str, issue_number:
     ts = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
     h = hashlib.sha1((path + summary + ts).encode()).hexdigest()[:7]
     branch_name = f"agent/issue-{issue_number}/{h}"
-    return apply_file_patch(path, new_content, branch_name, summary, issue_number, dry_run=DRY_RUN)
+    return apply_file_patch(path, new_content, repo_name, branch_name, summary, issue_number, dry_run=DRY_RUN)

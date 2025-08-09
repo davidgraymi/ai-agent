@@ -114,7 +114,7 @@ def test_push_branch_dry_run():
     assert "Dry run" in msg
 
 def test_create_pull_request_dry_run():
-    pr = git_utils.create_pull_request("branch-name", "title", "body", dry_run=True)
+    pr = git_utils.create_pull_request("repo-name", "branch-name", "title", "body", dry_run=True)
     assert isinstance(pr, dict)
     assert pr.get("dry_run") is True
     assert pr["title"] == "title"
@@ -136,6 +136,6 @@ def test_create_pull_request_real(monkeypatch):
         return DummyResponse()
 
     monkeypatch.setattr(requests, "post", fake_post)
-    pr = git_utils.create_pull_request("branch", "Test PR", "PR body")
+    pr = git_utils.create_pull_request("repo", "branch", "Test PR", "PR body")
     assert pr["html_url"] == "http://fakepr.url"
     assert pr["title"] == "pr title"
